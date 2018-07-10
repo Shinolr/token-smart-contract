@@ -10,7 +10,7 @@ contract Lock is StandardToken, Ownable{
 
     mapping(address => uint256) public usedBalance;
 
-    function availablePercent(address _to) internal constant returns (uint256) {
+    function availablePercent(address _to) internal view returns (uint256) {
         uint256 percent = 40;
         percent += ((now - lockStartTime[_to]) / 10 minutes ) * 20;
         if(percent > 100) {
@@ -20,12 +20,12 @@ contract Lock is StandardToken, Ownable{
     }
 
     function issueToken(address _to,uint256 _value) public onlyOwner {
-        require(super.transfer(_to,_value) ==  true);
+        require(super.transfer(_to,_value) == true);
         lockedBalance[_to] = lockedBalance[_to].add(_value);
         lockStartTime[_to] = block.timestamp;
     }
 
-    function available(address _to) public constant returns (uint256) {
+    function available(address _to) public view returns (uint256) {
         uint256 percent = availablePercent(_to);
         uint256 avail = lockedBalance[_to];
         avail = avail.mul(percent);

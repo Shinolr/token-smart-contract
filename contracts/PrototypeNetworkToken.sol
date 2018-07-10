@@ -2,7 +2,7 @@ pragma solidity ^0.4.16;
 import "./Lock.sol";
 
 
-contract PrototypeNetworkToken is Lock{
+contract PrototypeNetworkToken is Lock {
     string  public  constant name = "Prototype Network";
     string  public  constant symbol = "PROT";
     uint    public  constant decimals = 18;
@@ -10,21 +10,21 @@ contract PrototypeNetworkToken is Lock{
     bool public transferEnabled = true;
 
 
-    modifier validDestination( address to ) {
+    modifier validDestination(address to) {
         require(to != address(0x0));
-        require(to != address(this) );
+        require(to != address(this));
         _;
     }
 
-    function PrototypeNetworkToken() {
+    constructor () {
         // Mint all tokens. Then disable minting forever.
         totalSupply = 2100000000 * (10 ** decimals);
         balances[msg.sender] = totalSupply;
-        Transfer(address(0x0), msg.sender, totalSupply);
+        emit Transfer(address(0x0), msg.sender, totalSupply);
         transferOwnership(msg.sender); // admin could drain tokens that were sent here by mistake
     }
 
-    function transfer(address _to, uint _value) validDestination(_to) returns (bool) {
+    function transfer(address _to, uint _value) validDestination(_to) internal returns (bool) {
         require(transferEnabled == true);
 
         // The sender is in locked address list
@@ -35,7 +35,7 @@ contract PrototypeNetworkToken is Lock{
         }
     }
 
-    function transferFrom(address _from, address _to, uint _value) validDestination(_to) returns (bool) {
+    function transferFrom(address _from, address _to, uint _value) validDestination(_to) internal returns (bool) {
         require(transferEnabled == true);
         // The sender is in locked address list
         if(lockStartTime[_from] > 0) {
@@ -46,8 +46,9 @@ contract PrototypeNetworkToken is Lock{
     }
 
 
-    function emergencyERC20Drain( ERC20 token, uint amount ) onlyOwner {
-        token.transfer( owner, amount );
+    function emergencyERC20Drain(ERC20 token, uint amount) internal view onlyOwner {
+        token.transfer(owner, amount);
+        // address(this).transfer(owner, amount); 
     }
 
     function setTransferEnable(bool enable) onlyOwner {
